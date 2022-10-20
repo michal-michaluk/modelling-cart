@@ -1,0 +1,62 @@
+buildscript {
+    dependencies {
+        classpath group: 'org.yaml', name: 'snakeyaml', version: '1.29'
+    }
+}
+
+plugins {
+    id 'org.liquibase.gradle' version '2.0.4'
+    id 'groovy'
+}
+
+def artifactsEnvAccessToken = System.getenv("AZURE_ARTIFACTS_ENV_ACCESS_TOKEN")
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/milestone" }
+    maven {
+        url = uri("https://vfitonlineplatform.pkgs.visualstudio.com/_packaging/eMobility-inCharge/maven/v1")
+        name = "eMobility-inCharge"
+        credentials {
+            username = "AZURE_ARTIFACTS"
+            password = artifactsEnvAccessToken ?: artifactsAccessToken
+        }
+    }
+}
+
+dependencies {
+    liquibaseRuntime 'org.postgresql:postgresql:42.3.1'
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.15.0'
+    implementation 'org.yaml:snakeyaml'
+
+}
+
+import org.yaml.snakeyaml.Yaml
+
+liquibase {
+    activities {
+        def envProfile = System.getenv('ENV_PROFILE')
+        def pass = System.getenv('DB_PASSWORD')
+        def appEnv = new Yaml().load(new File('src/main/resources/application-' + envProfile + '.yml').newInputStream())
+        def app = new Yaml().load(new File('src/main/resources/application.yml').newInputStream())
+        main {
+            changeLogFile 'src/main/resources/dbchangelog.yml'
+            url "${appEnv.spring.datasource.url}"
+            username "${appEnv.spring.datasource.username}"
+            password pass
+            driver "${app.spring.datasource.driverClassName}"
+        }
+    }
+}
+task('deploy changeLog') {
+    doFirst() {
+        liquibase {
+            activities {
+                main {
+                    changeLogFile System.properties.liquibaseChangeLogFile
+                    contexts System.properties.liquibaseContexts
+                }
+            }
+        }
+    }
+}

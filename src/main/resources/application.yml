@@ -1,0 +1,27 @@
+spring.application.name: modelling
+spring.main.banner-mode: off
+
+management:
+  metrics.export.prometheus.enabled: true
+  endpoint.env.enabled: true
+  endpoints.web.exposure.include: "health,info,env,prometheus"
+
+logging.config: "classpath:log4j2.xml"
+
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    hikari:
+      maximumPoolSize: 15
+  jpa:
+    hibernate.ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  shutdown: graceful
+  error:
+    include-message: always

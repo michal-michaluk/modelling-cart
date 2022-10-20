@@ -1,0 +1,18 @@
+databaseChangeLog:
+- changeSet:
+    id: 3dc4fb6e-598f-429f-970b-9a3a3bee78f3
+    author: michal
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: documents_pkey
+            name: id
+            type: VARCHAR(255)
+        - column:
+            name: document
+            type: JSONB
+        tableName: documents
